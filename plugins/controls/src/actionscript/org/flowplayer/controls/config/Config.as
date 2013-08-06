@@ -331,6 +331,11 @@ package org.flowplayer.controls.config {
             }
         }
 		
+		// share function
+		public function get shareFunction():Object {
+			return _style["share"] as Object;
+		}
+		
 		// some backward compatibility
 		public function set hideDelay(value:Number):void
 		{

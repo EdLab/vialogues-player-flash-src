@@ -1,0 +1,36 @@
+<project name="Youtube Plugin For Vialogues Player" default="release">
+
+	<property file="${user.home}/plugin.properties" />
+	<property file="build.properties" />
+
+	<!-- The version number of our plugin, used in the zip and SWF file names -->
+	<property file="${devkit-dir}/plugin-build.properties" />
+	<import file="${devkit-dir}/plugin-build.xml"/>	
+	
+	<property name="flowplayer_lib" value="${devkit-dir}/flowplayer.swc" />
+
+	<!-- "basename" is the name of this plugin to be used in the SWF file name -->
+	<property name="basename" value="edlab.youtube" />
+	<property name="releasedir" value="${basename}" />
+	<property name="plugin-binary" value="${basename}.swf" />
+	
+	<!-- property name="plugin-binary-versioned" value="${basename}-${version}.swf" / -->
+	<property name="plugin-swc" value="${basename}.swc" />
+	<property name="locale" value="en_US"/>
+
+	<!-- The main class of our plugin. This is the main class provided to the mxmlc compiler -->
+	<property name="plugin-main-class" value="com/vialogues/youtube/Youtube.as" />
+	
+	<target name="release" description="makes a release" depends="build">
+		<!-- property name="flex-build-output-dir" value="${user.home}/dev/apps-vialogues/static/lib/vialoguesplayer/flowplayer/swf" /-->
+		<property name="flex-build-output-dir" value="/Applications/MAMP/htdocs/vialoguesplayer_v.3/flowplayer/swf" />
+		<copy todir="${flex-build-output-dir}" overwrite="true">
+			<fileset dir="${build-dir}">
+			    <include name="${plugin-binary}"/>
+			</fileset>
+		</copy>
+	</target>
+	
+	<!-- Key file to be copied over for convenient testing [JoJo] -->
+	
+</project>

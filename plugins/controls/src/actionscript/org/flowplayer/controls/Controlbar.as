@@ -11,31 +11,28 @@
 
 package org.flowplayer.controls {
    
-	import org.flowplayer.view.AbstractSprite;
-	import org.flowplayer.view.StyleableSprite;
-	import org.flowplayer.view.Flowplayer;
-		
-	import org.flowplayer.util.Arrange;	
-		
-	import org.flowplayer.ui.buttons.ConfigurableWidget;
-	import org.flowplayer.ui.buttons.ToggleButtonConfig;
-	import org.flowplayer.ui.buttons.WidgetDecorator;
-	import org.flowplayer.ui.buttons.ButtonDecorator;
-	
-	import org.flowplayer.ui.controllers.AbstractWidgetController;
-	import org.flowplayer.ui.controllers.AbstractButtonController;
+	import flash.display.DisplayObject;
+	import flash.display.DisplayObjectContainer;
+	import flash.display.Sprite;
+	import flash.events.Event;
+	import flash.events.MouseEvent;
+	import flash.utils.*;
 	
 	import org.flowplayer.controls.config.Config;
 	import org.flowplayer.controls.controllers.*;
-	import org.flowplayer.controls.time.TimeViewController;
 	import org.flowplayer.controls.scrubber.ScrubberController;
+	import org.flowplayer.controls.time.TimeViewController;
 	import org.flowplayer.controls.volume.VolumeController;
-	
-	import flash.utils.*
-	import flash.display.Sprite;
-	import flash.display.DisplayObject;
-	import flash.display.DisplayObjectContainer;
-	import flash.events.Event;
+	import org.flowplayer.ui.buttons.ButtonDecorator;
+	import org.flowplayer.ui.buttons.ConfigurableWidget;
+	import org.flowplayer.ui.buttons.ToggleButtonConfig;
+	import org.flowplayer.ui.buttons.WidgetDecorator;
+	import org.flowplayer.ui.controllers.AbstractButtonController;
+	import org.flowplayer.ui.controllers.AbstractWidgetController;
+	import org.flowplayer.util.Arrange;
+	import org.flowplayer.view.AbstractSprite;
+	import org.flowplayer.view.Flowplayer;
+	import org.flowplayer.view.StyleableSprite;
 	
 	
     public class Controlbar extends StyleableSprite {
@@ -113,6 +110,8 @@ package org.flowplayer.controls {
 
 			// call addWidget in reverse order so we add widgets at the beginning
 			addWidget(new ToggleFullScreenButtonController(), null, false);
+			addWidget(new ShareButtonController(), null, false);
+			addWidget(new ClosedCaptionButtonController(), null, false);
 			addWidget(new VolumeController(), null, false);
 			addWidget(new ToggleMuteButtonController(), null, false);
 			addWidget(new TimeViewController(), null, false);
@@ -284,22 +283,37 @@ package org.flowplayer.controls {
 			for ( var i:int = 0; i < widgets.length; i++ ) {
 				var widget:AbstractWidgetController = _widgetControllers[widgets[i]];			
 				
-				if ( ! _config.visible[widget.name] ) 
+				if ( ! _config.visible[widget.name] && widget.name != 'volume' ) 
 					continue;
 				
 				if ( widget.view is WidgetDecorator ) {
 					(widget.view as WidgetDecorator).spaceAfterWidget = getSpaceAfterWidget(widget.name);
 				}
 				
+				var newX:Number;
+				
 				// some exception
-				if ( widget.name == 'volume' )
-					arrangeVolumeControl(widget.view)
-				else
+				if ( widget.name == 'volume' ){
+					arrangeVolumeControl(widget.view); // do this before assigning newX to avoid x errors
+					
+					newX = x + 4; // Vialogues edit: move volume slightly to the right to align with the speaker icon
+					arrangeX(widget.view, newX - (widget.view as WidgetDecorator).spaceAfterWidget - getVolumeSliderHeight() );
+				} else {
 					arrangeYCentered(widget.view);
-				
-				var newX:Number = x + (widget.view.width) * (reverse ? -1 : 1);
-				
-				arrangeX(widget.view, reverse ? newX : x);
+					newX = x + (widget.view.width) * (reverse ? -1 : 1);
+					arrangeX(widget.view, reverse ? newX : x);
+					
+					if( widget.name == 'mute' ) {
+						widget.view.addEventListener(MouseEvent.ROLL_OVER, function(evt:MouseEvent):void {
+							( getWidget("volume") as VolumeController ).showVolume();
+						});
+						
+						widget.view.addEventListener(MouseEvent.ROLL_OUT, function(evt:MouseEvent):void {
+							( getWidget("volume") as VolumeController ).hideVolume();
+						});
+						
+					}
+				}
 				
 				x = newX;
 			}
@@ -308,8 +322,9 @@ package org.flowplayer.controls {
 		}
 
         private function arrangeVolumeControl(view:AbstractSprite):void {
-			view.setSize(getVolumeSliderWidth(), height - margins[0] - margins[2])
-            view.y = margins[0];
+			view.setSize(getVolumeSliderWidth(), height - margins[0] - margins[2]);
+			view.rotation = -90;
+			view.y = SkinClasses.defaults.volumeBoxPadding;
         }
 		
 		private function get margins():Array {
@@ -408,6 +423,10 @@ package org.flowplayer.controls {
 			return SkinClasses.getScrubberRightEdgeWidth(nextWidgetToRight);
 		}
 
+		private function getVolumeSliderHeight():int {
+			return SkinClasses.getVolumeSliderHeight();
+		}
+		
 		private function getVolumeSliderWidth():int {
 			return SkinClasses.getVolumeSliderWidth();
 		}

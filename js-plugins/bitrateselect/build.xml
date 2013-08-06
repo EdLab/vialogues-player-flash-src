@@ -1,6 +1,6 @@
 
 <!-- projet name is used as a base name for distribution files -->
-<project name="bitrateselect" default="default">
+<project name="bitrateselect" default="min">
     <property file="build.properties" />
 
 	<!-- import javascript-tasks (min, pack, lint, gzip, dist) -->

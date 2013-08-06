@@ -2,11 +2,12 @@ package org.flowplayer.controls {
     import flash.display.DisplayObject;
     import flash.display.DisplayObjectContainer;
     import flash.display.Sprite;
-import flash.system.ApplicationDomain;
-import flash.utils.getDefinitionByName;
+    import flash.system.ApplicationDomain;
+    import flash.utils.getDefinitionByName;
+    
+    import fp.*;
+    
     import org.flowplayer.util.Log;
-
-	import fp.*;
 
     /**
      * Holds references to classes contained in the buttons.swc lib.
@@ -46,6 +47,14 @@ import flash.utils.getDefinitionByName;
             private var volumeTop:fp.VolumeTopEdge;
             private var volumeBottom:fp.VolumeBottomEdge;
             private var defaults:SkinDefaults;
+			
+			private var share:fp.ShareButton;
+			private var closedCaption:fp.ClosedCaptionButton;
+			/*
+			* To add a new button to the controlbar: edit flash.vialogues.buttons_vialogues.fla
+			* Create a graphics symbol for the button, then a movie clip for glow animation based on the graphics, then a button class based on the movieclip.
+			* Use the button class in this file, create a button controller widget and add the widget in Controlbar.as
+			*/
         }
         
 
@@ -86,8 +95,17 @@ import flash.utils.getDefinitionByName;
                 return clazz["getVolumeSliderWidth"]();
             } catch (e:Error) {
             }
-            return 40;
+            return 70;
         }
+		
+		public static function getVolumeSliderHeight():Number {
+			try {
+				var clazz:Class = getClass("SkinDefaults");
+				return clazz["getVolumeSliderHeight"]();
+			} catch (e:Error) {
+			}
+			return 18;
+		}
 
         public static function set skinClasses(val:ApplicationDomain):void {
             log.debug("received skin classes " + val);

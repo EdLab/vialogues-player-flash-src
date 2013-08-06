@@ -10,13 +10,15 @@
 package org.flowplayer.controls.volume {
 	
     import flash.display.DisplayObject;
-	import flash.display.Sprite;
-import org.flowplayer.view.AnimationEngine;
-	import org.flowplayer.controls.config.Config;
-	import org.flowplayer.controls.buttons.AbstractSlider;	
-	import org.flowplayer.controls.buttons.SliderConfig;	
-	
-	import org.flowplayer.view.Flowplayer;
+    import flash.display.Sprite;
+    import flash.events.MouseEvent;
+    
+    import org.flowplayer.controls.SkinClasses;
+    import org.flowplayer.controls.buttons.AbstractSlider;
+    import org.flowplayer.controls.buttons.SliderConfig;
+    import org.flowplayer.controls.config.Config;
+    import org.flowplayer.view.AnimationEngine;
+    import org.flowplayer.view.Flowplayer;
 
 	/**
 	 * @author api
@@ -25,6 +27,8 @@ import org.flowplayer.view.AnimationEngine;
 		public static const DRAG_EVENT:String = AbstractSlider.DRAG_EVENT;
 
 		private var _volumeBar:Sprite;
+		private var _volumeBox:Sprite;
+		private var _isMouseOver:Boolean = false;
 
         override public function get name():String {
             return "volume";
@@ -38,8 +42,24 @@ import org.flowplayer.view.AnimationEngine;
 				return Math.round(percentage) + "%";
 			};
 			
+			createBox();
 			createBars();
             enableDragging(true);
+			
+			addListeners();
+		}
+		
+		private function createBox():void {
+			var padding:Number = SkinClasses.defaults.volumeBoxPadding;
+			_volumeBox = new Sprite();
+			_volumeBox.graphics.beginFill(SkinClasses.defaults.backgroundColor);
+			_volumeBox.graphics.drawRect(-1 * padding, -1 * this.height / 2, 2 * padding + SkinClasses.getVolumeSliderWidth(), 2 * padding + SkinClasses.getVolumeSliderHeight() );
+			_volumeBox.graphics.endFill();
+			_volumeBox.alpha = 0.75; // FIX-NEEDED: the box covers part of the sliderbar background
+			addChild(_volumeBox);
+			
+			swapChildren(_volumeBox, _dragger);
+			
 		}
 		
 		private function createBars():void {
@@ -72,8 +92,31 @@ import org.flowplayer.view.AnimationEngine;
         }
 
 		protected function get volumeAlpha():Number {
-			if (isNaN(_config.alpha) || _config.alpha == -2 ) return backgroundAlpha;
-            return _config.alpha;
+			return 1;
         }
+		
+		private function addListeners():void{
+			addEventListener(MouseEvent.ROLL_OVER, function(evt:MouseEvent):void{
+				_isMouseOver = true;
+				showSlider();
+			});
+			
+			addEventListener(MouseEvent.ROLL_OUT, function(evt:MouseEvent):void{
+				_isMouseOver = false;
+				hideSlider();
+			});
+		}
+		
+		public function get isMouseOver():Boolean {
+			return _isMouseOver;
+		}
+		
+		public function showSlider():void {
+			if(!this.visible) this.visible = true;
+		}
+		
+		public function hideSlider():void {
+			if(this.visible && !isMouseOver && !isDragging) this.visible = false;
+		}
 	}
 }

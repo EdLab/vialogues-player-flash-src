@@ -9,39 +9,32 @@
 
 package org.flowplayer.controls {
     
-	import org.flowplayer.view.StyleableSprite;
-	import org.flowplayer.view.Flowplayer;
-	
-	import org.flowplayer.model.Plugin;
-	import org.flowplayer.model.PluginModel;
-	import org.flowplayer.model.Playlist;
-	import org.flowplayer.model.ClipEvent;
-	import org.flowplayer.model.Clip;
-	import org.flowplayer.model.DisplayPluginModel;
-	
-	import org.flowplayer.util.PropertyBinder;
-	import org.flowplayer.util.Arrange
-	
-	import org.flowplayer.ui.containers.WidgetContainer;
-	import org.flowplayer.ui.containers.WidgetContainerEvent;
-	
-	import org.flowplayer.ui.controllers.AbstractWidgetController;
-	
-	import org.flowplayer.ui.AutoHide;
-	import org.flowplayer.ui.AutoHideConfig;
+	import flash.accessibility.Accessibility;
+	import flash.events.Event;
+	import flash.system.ApplicationDomain;
+	import flash.system.Security;
+	import flash.utils.*;
 	
 	import org.flowplayer.controls.config.Config;
 	import org.flowplayer.controls.config.ToolTipsConfig;
-	import org.flowplayer.controls.config.WidgetsVisibility;
 	import org.flowplayer.controls.config.WidgetsEnabledStates;
-	
-	import flash.events.Event;
-	import flash.system.Security;
-	import flash.system.ApplicationDomain;
-	
-	import flash.utils.*;
-
-    import flash.accessibility.Accessibility;
+	import org.flowplayer.controls.config.WidgetsVisibility;
+	import org.flowplayer.model.Clip;
+	import org.flowplayer.model.ClipEvent;
+	import org.flowplayer.model.DisplayPluginModel;
+	import org.flowplayer.model.Playlist;
+	import org.flowplayer.model.Plugin;
+	import org.flowplayer.model.PluginEventType;
+	import org.flowplayer.model.PluginModel;
+	import org.flowplayer.ui.AutoHide;
+	import org.flowplayer.ui.AutoHideConfig;
+	import org.flowplayer.ui.containers.WidgetContainer;
+	import org.flowplayer.ui.containers.WidgetContainerEvent;
+	import org.flowplayer.ui.controllers.AbstractWidgetController;
+	import org.flowplayer.util.Arrange;
+	import org.flowplayer.util.PropertyBinder;
+	import org.flowplayer.view.Flowplayer;
+	import org.flowplayer.view.StyleableSprite;
 
     /**
      * @author anssi
@@ -409,8 +402,6 @@ package org.flowplayer.controls {
             }
 
         }
-
-
       
         private function onPlayStopped(event:ClipEvent):void {
             log.debug("received " + event);
@@ -420,5 +411,13 @@ package org.flowplayer.controls {
                 handleClipConfig(clip.parent);
             }
         }
+		
+		
+		/**
+		 * Callback when "share" button is clicked
+		 */
+		public function onShare():void {
+			_pluginModel.dispatch(PluginEventType.PLUGIN_EVENT,"onShare");
+		}
     }
 }

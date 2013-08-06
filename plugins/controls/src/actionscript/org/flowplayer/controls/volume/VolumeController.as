@@ -9,25 +9,21 @@
  */
 package org.flowplayer.controls.volume {
     
-	import org.flowplayer.view.Flowplayer;
-	import org.flowplayer.view.AbstractSprite;
-	import org.flowplayer.model.Clip;
-	import org.flowplayer.model.ClipEvent;
-	import org.flowplayer.model.Status;
-	import org.flowplayer.model.PlayerEvent;
-	
-	import org.flowplayer.ui.buttons.ConfigurableWidget;
-	import org.flowplayer.ui.controllers.AbstractWidgetController;
-	import org.flowplayer.ui.buttons.WidgetDecorator;
+	import flash.display.DisplayObjectContainer;
+	import flash.events.Event;
 	
 	import org.flowplayer.controls.Controlbar;
 	import org.flowplayer.controls.SkinClasses;
-	
-	import flash.events.Event;
-	
-	import flash.display.DisplayObjectContainer;
-	
 	import org.flowplayer.controls.buttons.SliderConfig;
+	import org.flowplayer.model.Clip;
+	import org.flowplayer.model.ClipEvent;
+	import org.flowplayer.model.PlayerEvent;
+	import org.flowplayer.model.Status;
+	import org.flowplayer.ui.buttons.ConfigurableWidget;
+	import org.flowplayer.ui.buttons.WidgetDecorator;
+	import org.flowplayer.ui.controllers.AbstractWidgetController;
+	import org.flowplayer.view.AbstractSprite;
+	import org.flowplayer.view.Flowplayer;
 
 	public class VolumeController extends AbstractWidgetController {
 		
@@ -76,7 +72,8 @@ package org.flowplayer.controls.volume {
 
 
 		override protected function initWidget():void {
-			_widget.addEventListener(VolumeSlider.DRAG_EVENT, onVolumeChanged);
+			_widget.addEventListener(org.flowplayer.controls.volume.VolumeSlider.DRAG_EVENT, onVolumeChanged);
+			_widget.visible = false;
 			initializeVolume();
 		}
 
@@ -96,6 +93,21 @@ package org.flowplayer.controls.volume {
 		public function set tooltipTextFunc(tooltipTextFunc:Function):void {
             (_widget as VolumeSlider).tooltipTextFunc = tooltipTextFunc;
         }
+		
+		public function showVolume():void {
+			var vol:VolumeSlider = _widget as VolumeSlider;
+			vol.showSlider();
+		}
+		           
+		public function hideVolume():void {
+			var vol:VolumeSlider = _widget as VolumeSlider;
+			vol.hideSlider();
+		}
+		
+		public function getWidget():VolumeSlider {
+			return _widget as VolumeSlider;
+		}
+
 
 	}
 }

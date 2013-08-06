@@ -65,6 +65,9 @@
 			<condition property="pluginruntimelibs3" value="-runtime-shared-library-path+=${plugin-runtime-lib-swc3},library.swf" else="">
 				<isset property="plugin-runtime-lib-swc3" />
 			</condition>
+			<condition property="pluginruntimelibs-vialoguescontrols" value="-runtime-shared-library-path+=${plugin-runtime-lib-swc-vialoguescontrols},library.swf" else="">
+				<isset property="plugin-runtime-lib-swc-vialoguescontrols" />
+			</condition>
             <condition property="mxmlc-library-path" value="${library-path}" else="">
                 <isset property="library-path" />
             </condition>
@@ -91,6 +94,7 @@
 				<arg line="${pluginruntimelibs1}" />
 				<arg line="${pluginruntimelibs2}" />
 				<arg line="${pluginruntimelibs3}" />
+				<arg line="${pluginruntimelibs-vialoguescontrols}" />
 				<arg line="-default-frame-rate=${framerate}" />
 				<arg line="-default-background-color=${bgcolor}" />
                 <arg line="-strict=true" />
@@ -121,6 +125,9 @@
             				<condition property="pluginruntimelibs3" value="-runtime-shared-library-path+=${plugin-runtime-lib-swc3},library.swf" else="">
             					<isset property="plugin-runtime-lib-swc3" />
             				</condition>
+						<condition property="pluginruntimelibs-vialoguescontrols" value="-runtime-shared-library-path+=${plugin-runtime-lib-swc-vialoguescontrols},library.swf" else="">
+							<isset property="plugin-runtime-lib-swc-vialoguescontrols" />
+						</condition>
             	            <condition property="compc-library-path" value="${library-path}" else="">
             	                <isset property="library-path" />
             	            </condition>
