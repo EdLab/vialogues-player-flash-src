@@ -29,11 +29,13 @@ package org.flowplayer.controls.controllers {
 			
 			captionUrl = _player.currentClip.getCustomProperty("captionUrl") as String;
 			
+			toggleCCBtn(captionUrl ? true : false);
+			
 			return {
 				tooltipEnabled: false,
 				tooltipLabel: "Toggle CC",
-				visible: true,
-				enabled: captionUrl ? true : false
+				visible: captionUrl ? true : false,
+				enabled: true
 			};
 		}
 		
@@ -54,10 +56,6 @@ package org.flowplayer.controls.controllers {
 			} catch(err:Error) {
 				log.error("unable to toggle Closed Caption", err);
 			}
-		}
-		
-		override protected function onPlayStarted(event:ClipEvent):void {
-			if(captionUrl) toggleCCBtn(true);
 		}
 		
 		/**
