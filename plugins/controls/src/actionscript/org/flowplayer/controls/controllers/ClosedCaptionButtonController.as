@@ -40,7 +40,7 @@ package org.flowplayer.controls.controllers {
 		}
 		
 		override protected function get faceClass():Class {
-			return SkinClasses.getClass("fp.ClosedCaptionButton");
+			return SkinClasses.getClass("fp.ClosedCaptionOnButton");
 		}
 		
 		override protected function onButtonClicked(event:ButtonEvent):void {

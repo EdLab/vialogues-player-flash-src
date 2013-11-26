@@ -109,6 +109,7 @@ package org.flowplayer.controls {
             //log.info("creating createChildren ", _config);
 
 			// call addWidget in reverse order so we add widgets at the beginning
+			addWidget(new VialoguesButtonController(), null, false);
 			addWidget(new ToggleFullScreenButtonController(), null, false);
 			addWidget(new ShareButtonController(), null, false);
 			addWidget(new ClosedCaptionButtonController(), null, false);

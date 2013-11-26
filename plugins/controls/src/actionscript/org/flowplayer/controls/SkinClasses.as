@@ -49,7 +49,8 @@ package org.flowplayer.controls {
             private var defaults:SkinDefaults;
 			
 			private var share:fp.ShareButton;
-			private var closedCaption:fp.ClosedCaptionButton;
+			private var closedCaption:fp.ClosedCaptionOnButton;
+			private var vialoguesBtn:fp.VialoguesButton;
 			/*
 			* To add a new button to the controlbar: edit flash.vialogues.buttons_vialogues.fla
 			* Create a graphics symbol for the button, then a movie clip for glow animation based on the graphics, then a button class based on the movieclip.
