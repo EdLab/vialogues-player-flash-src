@@ -1,4 +1,4 @@
-<project name="'modern' controlbar for Flowplayer" default="deploy">
+<project name="'vialogues' controlbar for Flowplayer" default="deploy">
     <property file="build.generated.properties"/>
 
 	<property file="${user.home}/plugin.properties" />
@@ -10,7 +10,7 @@
     <property name="releasedir" value="flowplayer.controls" />
 
     <!-- location of the skin swd, anc swc -->
-    <property name="library-path" value="src/flash/modern" />
+    <property name="library-path" value="src/flash/vialogues" />
 
     <property name="extra-sources" value="../../lib/common/src/actionscript" />
 
@@ -24,7 +24,7 @@
     <property name="compiler-define" value="CONFIG::skin,'true' -define=CONFIG::hasSlowMotion,'true'" />
 
 
-    <target name="build-skinless">
+    <!--target name="build-skinless">
         <ant antfile="build-skinless.xml" target="build" inheritall="false" />
     </target>
 
@@ -34,9 +34,13 @@
 
 	<target name="build-air">
         <ant antfile="build-air.xml" target="build" inheritall="false" />
+    </target-->
+
+	<target name="build-vialogues">
+        <ant antfile="build-vialogues.xml" target="build" inheritall="false" />
     </target>
 
-    <target name="build-all" depends="build, build-skinless, build-tube, build-air" />
+    <target name="build-all" depends="build-vialogues" />
 
     <target name="zip">
         <echo message="zipping controls" />
@@ -45,11 +49,9 @@
                 <include name="LICENSE.txt" />
                 <include name="README.txt" />
             </zipfileset>
-            <zipfileset prefix="${basename}" dir="${build-dir}">
+            <zipfileset prefix="${basename}" dir="${build-vialogues}">
                 <include name="${plugin-binary-versioned}" />
-                <include name="flowplayer.controls-skinless-${version}.swf" />
-                <include name="flowplayer.controls-tube-${version}.swf" />
-				<include name="flowplayer.controls-air-${version}.swf" />
+                <include name="flowplayer.controls-vialogues-${version}.swf" />
             </zipfileset>
         </zip>
         <copy file="${dist-dir}/${basename}-${version}.zip" tofile="${dist-dir}/${basename}.zip" overwrite="true" />

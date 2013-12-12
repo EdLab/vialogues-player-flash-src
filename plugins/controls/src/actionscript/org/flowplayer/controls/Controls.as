@@ -357,6 +357,8 @@ package org.flowplayer.controls {
             playlist.onStop(onPlayStopped);
             playlist.onBufferStop(onPlayStopped);
             playlist.onFinish(onPlayStopped);
+			
+			playlist.onStart(onPlayStart);
         }
 
         private function onPlayBegin(event:ClipEvent):void {
@@ -364,6 +366,10 @@ package org.flowplayer.controls {
             var clip:Clip = event.target as Clip;
             handleClipConfig(clip);
         }
+		
+		private function onPlayStart(event:ClipEvent):void {
+			updateControlbar();
+		}
 
         private function handleClipConfig(clip:Clip):void {
             var controlsConfig:Object = clip.getCustomProperty("controls");

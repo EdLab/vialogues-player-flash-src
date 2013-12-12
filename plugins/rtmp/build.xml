@@ -27,5 +27,12 @@
 			</releasefiles>
 		</copyrelease>
 	</target>
+	
+	<property name="flex-build-output-dir" value="/Applications/MAMP/htdocs/vialoguesplayer_v.3/flowplayer/swf" />
+	<copy todir="${flex-build-output-dir}" overwrite="true">
+		<fileset dir="${build-dir}">
+		    <include name="${plugin-binary}"/>
+		</fileset>
+	</copy>
 
 </project>

@@ -49,7 +49,8 @@ package org.flowplayer.controls {
             private var defaults:SkinDefaults;
 			
 			private var share:fp.ShareButton;
-			private var closedCaption:fp.ClosedCaptionOnButton;
+			private var closedCaptionOn:fp.ClosedCaptionOnButton;
+			private var closedCaptionOff:fp.ClosedCaptionOffButton;
 			private var vialoguesBtn:fp.VialoguesButton;
 			/*
 			* To add a new button to the controlbar: edit flash.vialogues.buttons_vialogues.fla

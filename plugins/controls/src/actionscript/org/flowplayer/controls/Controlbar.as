@@ -112,7 +112,7 @@ package org.flowplayer.controls {
 			addWidget(new VialoguesButtonController(), null, false);
 			addWidget(new ToggleFullScreenButtonController(), null, false);
 			addWidget(new ShareButtonController(), null, false);
-			addWidget(new ClosedCaptionButtonController(), null, false);
+			addWidget(new ToggleCCButtonController(), null, false);
 			addWidget(new VolumeController(), null, false);
 			addWidget(new ToggleMuteButtonController(), null, false);
 			addWidget(new TimeViewController(), null, false);
