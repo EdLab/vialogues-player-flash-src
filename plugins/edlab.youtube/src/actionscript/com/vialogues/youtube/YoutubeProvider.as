@@ -520,7 +520,7 @@ package com.vialogues.youtube {
 			
 			log.debug("seek() :: " + seconds);
 			
-			if(seconds) _seek(seconds);
+			if(seconds >= 0) _seek(seconds);
 			else log.error("seek() :: invalid seek time :: " + seconds);
 			
 		}

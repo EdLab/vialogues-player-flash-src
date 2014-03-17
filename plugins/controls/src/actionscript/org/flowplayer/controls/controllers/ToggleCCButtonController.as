@@ -13,7 +13,7 @@ package org.flowplayer.controls.controllers {
 	
 	public class ToggleCCButtonController extends AbstractToggleButtonController {
 		
-		private var captionUrl:String = "";
+		private var captionUrl:String;
 		
 		public function ToggleCCButtonController() {
 			super();
@@ -28,7 +28,7 @@ package org.flowplayer.controls.controllers {
 			return {
 				tooltipEnabled: false,
 				tooltipLabel: "CC Off",
-				visible: captionUrl != "",
+				visible: captionUrl ? true : false,
 				enabled: true
 			};
 		}
@@ -42,7 +42,7 @@ package org.flowplayer.controls.controllers {
 			return {
 				tooltipEnabled: false,
 				tooltipLabel: "CC On",
-				visible: captionUrl != "",
+				visible: captionUrl ? true : false,
 				enabled: true
 			};
 		}
