@@ -262,7 +262,6 @@ package com.vialogues.youtube {
 			
 			_model.dispatchOnLoad(); // Let Flowplayer know this plugin is ready
 			
-			
 			// log.debug("onYTPlayerReady() :: controller muted = "+_volumeController.muted + "; volume = "+_volumeController.volume);
 		}
 		
@@ -338,6 +337,7 @@ package com.vialogues.youtube {
 						log.debug("onAllEvents() :: onFinish :: has next video");
 					} else {
 						log.debug("onAllEvents() :: onFinish :: last video");
+						_player.stop();
 					}
 					
 					clip.unbind(onAllEvents);
