@@ -62,6 +62,7 @@ package com.vialogues.youtube {
 		private var _playlist:Playlist;
 		private var _video:YoutubeVideoContainer;
 		private var seekingYoutube:Boolean = false;
+		private var firstPlayback:Boolean = true;
 		
 		public function YoutubeProvider(){
 			//silence is gold
@@ -102,15 +103,13 @@ package com.vialogues.youtube {
 			_clip = _playlist.current;
 			_autoplay = _clip.autoPlay ? true : false; // use the common clip's autoplay setting
 			
-			_config.initTime = _clip.start ? _clip.start : 0;
-			
 			// Allow accessing Youtube media servers
 			for(var sdom:String in _config.securityDomains) {
 				Security.allowDomain(_config.securityDomains[sdom]);
 			}
 			
 			log.debug("onload() :: obtaining youtube chromeless player");
-
+			
 			_ytplayerLoader = new Loader();
 			
 			// Load the Youtube chromeless player. Chromeless player should be loaded even if the Youtube video is not playable.
@@ -137,9 +136,14 @@ package com.vialogues.youtube {
 			
 			clip.onAll(onAllEvents);
 			
+			_config.initTime = (firstPlayback && clip.start) ? clip.start : 0; // set initTime for the YouTube clip
+			
 			// Request video metadata from Youtube data API
 			_config.vid = clip.url;
 			
+			// Update internal clip
+			_clip = clip;
+
 			log.debug("prepareYoutubeClip() :: requesting clip data from " + _config.data_api);
 
 			var newVideoData:HTTPService = new HTTPService();
@@ -244,7 +248,9 @@ package com.vialogues.youtube {
 			
 			log.debug("onYTPlayerReady() :: "+event.type);
 			
-			// setup volume control			
+			_ytplayer.setLoop(true); // set loop to true so that ytplayer will rewind to the first clip in the playlist after playback is finished
+			
+			// setup volume control
 			_volumeController = new YoutubeVolumeController(_player);
 			_volumeController.videoObj = _ytplayer;
 			_volumeController.volume = _player.volume;
@@ -336,8 +342,11 @@ package com.vialogues.youtube {
 					if(_playlist.hasNext()) {
 						log.debug("onAllEvents() :: onFinish :: has next video");
 					} else {
+						// When playlist is finished, stop both the chromeless and Flowplayer. This makes it easier to sync the two players when clip is replayed
 						log.debug("onAllEvents() :: onFinish :: last video");
-						_player.stop();
+						_ytplayer.stopVideo();
+						_clip.dispatch(ClipEventType.STOP);
+						firstPlayback = false;
 					}
 					
 					clip.unbind(onAllEvents);
@@ -472,7 +481,7 @@ package com.vialogues.youtube {
 			
 			if(!_ytplayer) log.error("_load() :: Youtube chromeless player not loaded");
 			
-			log.debug("_load() :: " + clip.index);
+			log.debug("_load() :: clip index = " + clip.index);
 			
 			_clip = clip;
 			
