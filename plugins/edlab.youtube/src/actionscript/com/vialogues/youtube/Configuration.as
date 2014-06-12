@@ -23,7 +23,8 @@ package com.vialogues.youtube
 		private var _imgurl:String; // splash image url
 		private var _gdata:XML;
 		private var _embedAllowed:Boolean;
-		private var _initTime:int = 0;
+		private var _initTime:int;
+		private var _firstPlayback:Boolean = true;
 		private var _startAfterConnect:Boolean = false;
 		private var _securityDomains:Array = [
 			"http://www.youtube.com", 
@@ -94,7 +95,7 @@ package com.vialogues.youtube
 			
 			var imageQName:QName = new QName(mediaNS,"thumbnail");
 			_imgurl = _gdata.descendants(imageQName).(attribute(nameQName)=="hqdefault").attribute("url");
-						
+			
 		}
 		
 		public function get gdata():XML{

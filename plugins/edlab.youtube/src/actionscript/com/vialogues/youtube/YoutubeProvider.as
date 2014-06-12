@@ -92,16 +92,13 @@ package com.vialogues.youtube {
 			_screen = _player.pluginRegistry.getPlugin("screen") as DisplayProperties; // this should be the same as _screen = _player.screen
 			_controls = _player.pluginRegistry.getPlugin("controls") as DisplayProperties; 
 			
-			log.debug("onload() :: autoplay=" + _autoplay);
-			
 			if(!_playlist.current) {
 				log.error("onLoad() :: no clip to play");
-				//_model.dispatchError(PluginError.INIT_FAILED);
+				_player.showError("Clip not defined");
 				return;
 			}
 			
-			_clip = _playlist.current;
-			_autoplay = _clip.autoPlay ? true : false; // use the common clip's autoplay setting
+			_clip = _playlist.current; // this clip may not be the actual clip to play (e.g. if it's a splash image in playlist)
 			
 			// Allow accessing Youtube media servers
 			for(var sdom:String in _config.securityDomains) {
@@ -125,24 +122,23 @@ package com.vialogues.youtube {
 
 			// Convert clip type to API. In Javascript, the clip url MUST be something like "api:bCGmUCDj4Nc" as Flowplayer is coded to work this way.
 			clip.type = ClipType.API;
-			clip.autoPlay = _autoplay;
+
+			/*
+			 * TODO: autoBuffering should be based on clip config. If autuBuffering, _ytplayer should call loadVideoById immediately but pause video once 
+			 * playback begins. Otherwise, loadVideoById can be called at a later time.
+			 */
 			clip.autoBuffering = false;
 			clip.metaData = false;
-			
 			clip.startDispatched = false;
 			
-			// Unbind event listeners (if any) before binding so as to avoid double binding
-			clip.unbind(onAllEvents);
-			
 			clip.onAll(onAllEvents);
-			
-			_config.initTime = (firstPlayback && clip.start) ? clip.start : 0; // set initTime for the YouTube clip
 			
 			// Request video metadata from Youtube data API
 			_config.vid = clip.url;
 			
 			// Update internal clip
 			_clip = clip;
+			_autoplay = _clip.autoPlay ? _clip.autoPlay : false;
 
 			log.debug("prepareYoutubeClip() :: requesting clip data from " + _config.data_api);
 
@@ -217,7 +213,7 @@ package com.vialogues.youtube {
 				height: 240 // default video height from youtube api
 			};
 			
-			log.debug("updateClip()", clip.metaData);
+			log.debug("updateClip()", clip.metaData, config);
 			
 		}
 		
@@ -248,8 +244,6 @@ package com.vialogues.youtube {
 			
 			log.debug("onYTPlayerReady() :: "+event.type);
 			
-			_ytplayer.setLoop(true); // set loop to true so that ytplayer will rewind to the first clip in the playlist after playback is finished
-			
 			// setup volume control
 			_volumeController = new YoutubeVolumeController(_player);
 			_volumeController.videoObj = _ytplayer;
@@ -268,7 +262,7 @@ package com.vialogues.youtube {
 			
 			_model.dispatchOnLoad(); // Let Flowplayer know this plugin is ready
 			
-			// log.debug("onYTPlayerReady() :: controller muted = "+_volumeController.muted + "; volume = "+_volumeController.volume);
+			log.debug("onYTPlayerReady() :: controller muted = "+_volumeController.muted + "; volume = "+_volumeController.volume);
 		}
 		
 		/**
@@ -306,9 +300,10 @@ package com.vialogues.youtube {
 		 * Load the Youtube video when clip URL is resolved
 		 */
 		private function onClipUrlResolved(clip:Clip):void {
-			log.debug("onClipUrlResolved() :: " + clip.typeStr + " :: " + clip.completeUrl);
 			
-			_ytplayer.loadVideoById(_config.vid, _config.initTime ? _config.initTime : 0);
+			log.debug("onClipUrlResolved() :: " + clip.typeStr + " :: " + clip.completeUrl + " :: startSeconds = " + _config.initTime);
+			
+			_ytplayer.loadVideoById(_config.vid, _config.initTime);
 		}
 		
 		/**** Event handlers **/
@@ -338,26 +333,34 @@ package com.vialogues.youtube {
 					log.debug("onAllEvents() :: onSeek :: " + Number(event.info));
 					break;
 				case "onFinish":
+					log.debug("onAllEvents() :: onFinish");
 					
-					if(_playlist.hasNext()) {
-						log.debug("onAllEvents() :: onFinish :: has next video");
-					} else {
-						// When playlist is finished, stop both the chromeless and Flowplayer. This makes it easier to sync the two players when clip is replayed
-						log.debug("onAllEvents() :: onFinish :: last video");
-						_ytplayer.stopVideo();
-						_clip.dispatch(ClipEventType.STOP);
-						firstPlayback = false;
+					_ytplayer.stopVideo();
+					
+					firstPlayback = false;
+					clip.startDispatched = false;
+					
+					try{
+						// Restore the screen overlay to full size so that user cannot click the replay button in Chromeless player (which
+						// gives trouble to Flowplayer). Yes this is against YouTube's TOS but let it be since we are switching to HTML5.
+						Object(_screen.getDisplayObject()).setVideoApiOverlaySize(_video.width,_video.height);
+					} catch(err:Error){
+						log.debug("cannot resize screen overlay ",err);
 					}
 					
-					clip.unbind(onAllEvents);
-					clip.startDispatched = false;
+					// "Close" will stop player and close existing connection and stream, which makes sure player state is set to "1"
+					// Also make sure "close" is called last because scripts after it will be ignored (internal Flowplayer thing)
+					_player.close();
+					
 					break;
 				case "onError":
 					log.error("onAllEvents() :: " + event.eventType.name, event.info);
 					break;
 				case "onResized":
 					if(clip.provider == "youtube") {
-						// Update the overlay on top of the displaylist so as to keep youtube ads and logo interactable
+						log.debug("onResized");
+						// Update the overlay on top of the displaylist so as to keep youtube ads and logo interactable (required by YouTube's
+						// TOS). Flowplayer dispathes resize event pretty frequently so we don't need to bother to call it ourselves.
 						try{
 							Object(_screen.getDisplayObject()).setVideoApiOverlaySize(_video.width,_video.height-YOUTUBE_PLAYER_ADS_HEIGHT);
 						} catch(err:Error){
@@ -388,13 +391,12 @@ package com.vialogues.youtube {
 					break;
 				case 0: //Params.STATE_ENDED
 					
-					// Notify Flowplayer about ending the Youtube clip because they are not often synch
+					// Notify Flowplayer about ending the Youtube clip because they are not often synced
 					_clip.dispatch(ClipEventType.LAST_SECOND);
 					_clip.dispatch(ClipEventType.FINISH);
 					
 					break;
 				case 1: //Params.STATE_PLAYING
-					
 					if(!_clip.startDispatched) { // This is when the clip starts playing
 						
 						_clip.dispatch(ClipEventType.BEGIN);
@@ -406,7 +408,7 @@ package com.vialogues.youtube {
 						initiated.
 						*/
 						
-						_clip.metaData.bytesTotal = _ytplayer.getVideoBytesTotal() as Number;	
+						_clip.metaData.bytesTotal = _ytplayer.getVideoBytesTotal() as Number;
 						_clip.duration = _duration;
 						_clip.durationFromMetadata = _duration;
 						
@@ -418,6 +420,7 @@ package com.vialogues.youtube {
 						_clip.dispatch(ClipEventType.UPDATE);
 						
 						_clip.dispatch(ClipEventType.START);
+						
 						/*
 						the START clip event:
 						This fires at the point at which playback commences. With autoBuffering set 
@@ -464,7 +467,7 @@ package com.vialogues.youtube {
 		/**
 		 * Load Youtube video (interface method)
 		 */
-		public function load(event:ClipEvent, clip:Clip, pauseAfterStart:Boolean=true):void{			
+		public function load(event:ClipEvent, clip:Clip, pauseAfterStart:Boolean=false):void{			
 			
 			log.debug("load() :: pauseAfterStart ? " + pauseAfterStart);
 			
@@ -485,7 +488,9 @@ package com.vialogues.youtube {
 			
 			_clip = clip;
 			
-			if(clip.provider == "youtube"){ // If clip provider is not Youtube then leave it to Flowplayer
+			if(_clip.provider == "youtube"){ // If clip provider is not Youtube then leave it to Flowplayer
+				if(!_config.initTime) _config.initTime = firstPlayback && _clip.start ? _clip.start : 0;
+				else _clip.start = _config.initTime;
 				prepareYoutubeClip(_clip);
 			}
 			
@@ -529,8 +534,11 @@ package com.vialogues.youtube {
 			
 			log.debug("seek() :: " + seconds);
 			
-			if(seconds >= 0) _seek(seconds);
-			else log.error("seek() :: invalid seek time :: " + seconds);
+			if(seconds >=0 && seconds < _duration) {
+				_seek(seconds);
+			} else {
+				log.error("seek() :: ignored invalid seek time :: " + seconds);
+			}
 			
 		}
 		
@@ -559,7 +567,7 @@ package com.vialogues.youtube {
 		}
 		
 		private function isVideoPlaying():Boolean{
-			return (_ytplayer.getPlayerState() == 1);			
+			return (_ytplayer.getPlayerState() == 1);
 		}
 		
 		private function isVideoPaused():Boolean{
@@ -581,8 +589,7 @@ package com.vialogues.youtube {
 		
 		public function getVideo(clip:Clip):DisplayObject{
 			
-			//clip = _playlist.current;
-			log.debug("getVideo() :: " + clip.index);
+			log.debug("getVideo() :: clip #" + clip.index);
 			
 			return _video ? _video : {} as DisplayObject;
 		}
@@ -700,6 +707,7 @@ package com.vialogues.youtube {
 		[External]
 		public function set clipInitTime(t:Number):void{
 			_config.initTime = t;
+			log.info("clip initTime set to " + t.toString());
 		}
 		
 	}
