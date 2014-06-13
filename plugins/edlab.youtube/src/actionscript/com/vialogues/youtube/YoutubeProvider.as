@@ -420,13 +420,15 @@ package com.vialogues.youtube {
 						_clip.dispatch(ClipEventType.UPDATE);
 						
 						_clip.dispatch(ClipEventType.START);
-						
 						/*
 						the START clip event:
 						This fires at the point at which playback commences. With autoBuffering set 
 						to true it even fires when autoPlay is false, because the clip is paused at 
 						the first frame.
 						*/
+						
+						_clip.dispatch(ClipEventType.BUFFER_FULL); // have to dispatch buffer_full, otherwise Flowplayer will think it's still buffering
+						
 						_clip.startDispatched = true;
 						
 						log.debug("onYTPlayerStateChange() :: playback begin");
@@ -444,6 +446,8 @@ package com.vialogues.youtube {
 							_clip.dispatch(ClipEventType.SEEK, (time / duration)); 
 							// Dispatch SEEK event instead of RESUME or PAUSE despite the prior state
 							// Flowplayer will automatically restore to the prior state
+							
+							_clip.dispatch(ClipEventType.BUFFER_FULL);
 							
 							seekingYoutube = false;
 						}
