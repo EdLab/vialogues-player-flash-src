@@ -538,6 +538,7 @@ package com.vialogues.youtube {
 				_seek(seconds);
 			} else {
 				log.error("seek() :: ignored invalid seek time :: " + seconds);
+				_clip.dispatch(ClipEventType.RESUME);
 			}
 			
 		}
