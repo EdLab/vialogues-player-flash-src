@@ -145,7 +145,7 @@ package com.vialogues.youtube {
 			var newVideoData:HTTPService = new HTTPService();
 			newVideoData.url = _config.data_api;
 			newVideoData.method = "GET";
-			newVideoData.resultFormat = "e4x";
+			newVideoData.resultFormat = "text";
 			newVideoData.addEventListener(ResultEvent.RESULT, onGDataReceived);
 			newVideoData.addEventListener(FaultEvent.FAULT, onGDataFault);
 			newVideoData.send();
@@ -181,13 +181,13 @@ package com.vialogues.youtube {
 			
 			log.debug("onGDataReceived() :: ");
 			
-			var gdata:XML = evt.result as XML;
+			var gdata:Object = JSON.parse(evt.result as String);
 			_config.gdata =  gdata;
 			_duration = _config.duration;
 			
 			// Make sure the Youtube video allows embedding
 			if(!_config.embedAllowed){
-				_player.showError("Embedding disabled by the video owner. Please watch on Youtube at " + youtubeUrl);
+				_player.showError("Embedding disabled by the video owner. Please watch on Youtube at " + _config.vurl);
 				return;
 			}
 			
