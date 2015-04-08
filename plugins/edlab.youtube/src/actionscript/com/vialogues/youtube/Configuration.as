@@ -1,33 +1,32 @@
 package com.vialogues.youtube
 {
 	import org.flowplayer.config.Config;
+	import org.flowplayer.util.Log;
 		
 	public class Configuration
 	{		
 		private const PLAYER_URL:String = "http://www.youtube.com/apiplayer?version=3";
 		
-		private const API_PREFIX:String = "http://gdata.youtube.com/feeds/api/videos/"; 
-		private const API_SUFFIX:String = "?v=2";
-		/* 
-		API Suffix:
-		v=2: data api version
-		Details see https://developers.google.com/youtube/2.0/developers_guide_protocol_video_entries
-		*/
-		private const YOUTUBE_DEVELOPER_KEY:String = "AI39si4v0_1qE4h4ZZQUab8tn6AeYgMO9lmmo9kavIZAQmTYoxuRhxzL1Lm0OFyE7Xag6bIBwofkH2Xr2woUa26-f0vmlf813w";
+		private const API_PREFIX:String = "https://www.googleapis.com/youtube/v3/videos/";
+		private const YOUTUBE_DEVELOPER_KEY:String = "AIzaSyB_2uykRwVkf0rciJmJc04h0njKEPo3mtc"; // YouTube public API key for edlabdata@gmail.com
+		private const ADDITIONAL_API_PARAMS:String = "&part=status,snippet,contentDetails&key=" + YOUTUBE_DEVELOPER_KEY;
 		private const DEFAULT_CLIPHEIGHT:Number = 350;
 		private const DEFAULT_CLIPWIDTH:Number = 520;
 		private const VERSION_NUMBER:Number = 1.0;
+		
+		private var log:Log = new Log(this);
 
 		private var _vid:String; // Youtube video id
 		private var _vurl:String; // original Youtube url
 		private var _imgurl:String; // splash image url
-		private var _gdata:XML;
+		private var _gdata:Object;
 		private var _embedAllowed:Boolean;
 		private var _initTime:int;
 		private var _firstPlayback:Boolean = true;
 		private var _startAfterConnect:Boolean = false;
 		private var _securityDomains:Array = [
 			"http://www.youtube.com", 
+			"https://www.youtube.com", 
 			"http://s.ytimg.com", 
 			"http://i.ytimg.com",
 			"http://i1.ytimg.com",
@@ -46,13 +45,35 @@ package com.vialogues.youtube
 		private var _clipHeight:Number;
 		private var _loadSplashImage:Boolean = false;
 		
+		private function ISO8601ToSeconds(s:String):Number {
+			
+			log.debug("ISO8601ToSeconds :: video duration raw data :: " + s.toString());
+			var result:Array = s.match(/PT(\d*H)?(\d*M)?(\d*S)?/); //PT2H28M13S => {0:PT2H28M13S,1:2H,2:28M,3:13S}
+			var multipliers:Object = {
+				'S': 1,
+				'M': 60,
+				'H': 3600
+			};
+			var duration:Number = 0;
+			for (var i:uint=1; i<result.length; i++) {
+				if(result[i]){
+					var ele:String = result[i];
+					var multiplier:String = ele.substr(ele.length-1);
+					log.debug(multiplier, multipliers[multiplier].toString(), ele.substr(0,ele.length-1));
+					duration += (multipliers[multiplier] * Number(ele.substr(0,ele.length-1)));
+				}
+			}
+			log.debug("ISO8601ToSeconds :: video duration converted to :: " + duration.toString());
+			return duration;
+		}
+		
 		public function get player_url():String{
 			return PLAYER_URL;
 		}
 		
 		public function get data_api():String{
 			if(_vid)
-				return API_PREFIX + _vid + API_SUFFIX + "&key=" + YOUTUBE_DEVELOPER_KEY;
+				return API_PREFIX + '?id=' + _vid + ADDITIONAL_API_PARAMS; //https://www.googleapis.com/youtube/v3/videos/?id=Pq6emY4D4Xs&part=status&key=AIzaSyB_2uykRwVkf0rciJmJc04h0njKEPo3mtc
 			return null;
 		}
 		
@@ -74,35 +95,22 @@ package com.vialogues.youtube
 			return _imgurl;
 		}
 		
-		public function set gdata(s:XML):void{
+		public function set gdata(s:Object):void{
 			_gdata = s;
 			
-			/* 
-			  Youtube uses namespaces in the video data xml. Need to use QName to retrieve media entries -- even for atom elements
-			  See http://stackoverflow.com/questions/8160541/as3-parsing-xml 
-			*/
-			var atomNS:String = _gdata.namespace();
-			var mediaNS:String = _gdata.namespace("media");
-			var ytNS:String = _gdata.namespace("yt");
-			var contentQName:QName = new QName(mediaNS,"content");
-			var formatQName:QName = new QName(ytNS,"format");
-			var nameQName:QName = new QName(ytNS, "name");
-			var accessControlQName:QName = new QName(ytNS, "accessControl");
+			var vid_obj:Object = _gdata.items[0];
 			
-			_vurl = _gdata.descendants(new QName(atomNS,"link")).(attribute("rel")=="alternate").attribute("href");
-			_duration = _gdata.descendants(contentQName).(attribute(formatQName)=="5").attribute("duration");
-			_embedAllowed = ( _gdata.descendants(accessControlQName).(attribute("action")=="embed").attribute("permission") == "allowed" );
-			
-			var imageQName:QName = new QName(mediaNS,"thumbnail");
-			_imgurl = _gdata.descendants(imageQName).(attribute(nameQName)=="hqdefault").attribute("url");
-			
+			_vurl = "https://youtu.be/" + vid_obj.id;
+			_duration = ISO8601ToSeconds(vid_obj.contentDetails.duration);
+			_embedAllowed = vid_obj.status.embeddable;
+			_imgurl = vid_obj.snippet.thumbnails.high ? vid_obj.snippet.thumbnails.high.url : vid_obj.snippet.thumbnails.medium.url
 		}
 		
-		public function get gdata():XML{
+		public function get gdata():Object{
 			if(_gdata)
 				return _gdata;
 			
-			return new XML();
+			return new Object();
 		}
 		
 		public function set initTime(s:int):void{

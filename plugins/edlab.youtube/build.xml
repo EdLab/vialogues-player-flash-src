@@ -23,7 +23,7 @@
 
 	<target name="release" description="makes a release" depends="build">
 		<!-- property name="flex-build-output-dir" value="${user.home}/dev/apps-vialogues/static/lib/vialoguesplayer/flowplayer/swf" /-->
-		<property name="flex-build-output-dir" value="/Applications/MAMP/htdocs/vialoguesplayer_v.3/flowplayer/swf" />
+		<property name="flex-build-output-dir" value="/Users/zhouzhou/dev/vialoguesplayer/flowplayer/swf" />
 		<copy todir="${flex-build-output-dir}" overwrite="true">
 			<fileset dir="${build-dir}">
 			    <include name="${plugin-binary}"/>
