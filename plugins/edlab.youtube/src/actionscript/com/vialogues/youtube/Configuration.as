@@ -1,17 +1,20 @@
 package com.vialogues.youtube
 {
 	import org.flowplayer.config.Config;
+	import org.flowplayer.util.Log;
 		
 	public class Configuration
 	{		
 		private const PLAYER_URL:String = "http://www.youtube.com/apiplayer?version=3";
 		
 		private const API_PREFIX:String = "https://www.googleapis.com/youtube/v3/videos/";
+		private const YOUTUBE_DEVELOPER_KEY:String = "AIzaSyB_2uykRwVkf0rciJmJc04h0njKEPo3mtc"; // YouTube public API key for edlabdata@gmail.com
 		private const ADDITIONAL_API_PARAMS:String = "&part=status,snippet,contentDetails&key=" + YOUTUBE_DEVELOPER_KEY;
-		private const YOUTUBE_DEVELOPER_KEY:String = "AIzaSyB_2uykRwVkf0rciJmJc04h0njKEPo3mtc"; // YouTube public APA key for edlabdata@gmail.com
 		private const DEFAULT_CLIPHEIGHT:Number = 350;
 		private const DEFAULT_CLIPWIDTH:Number = 520;
 		private const VERSION_NUMBER:Number = 1.0;
+		
+		private var log:Log = new Log(this);
 
 		private var _vid:String; // Youtube video id
 		private var _vurl:String; // original Youtube url
@@ -23,6 +26,7 @@ package com.vialogues.youtube
 		private var _startAfterConnect:Boolean = false;
 		private var _securityDomains:Array = [
 			"http://www.youtube.com", 
+			"https://www.youtube.com", 
 			"http://s.ytimg.com", 
 			"http://i.ytimg.com",
 			"http://i1.ytimg.com",
@@ -42,23 +46,34 @@ package com.vialogues.youtube
 		private var _loadSplashImage:Boolean = false;
 		
 		private function ISO8601ToSeconds(s:String):Number {
-			var durationPattern:RegExp = /PT(\dH)?(\dM)?\dS/; //PT2H28M13S
-			if(!durationPattern.test(s)){
-				return 20;
+			
+			log.debug("ISO8601ToSeconds :: video duration raw data :: " + s.toString());
+			var result:Array = s.match(/PT(\d*H)?(\d*M)?(\d*S)?/); //PT2H28M13S => {0:PT2H28M13S,1:2H,2:28M,3:13S}
+			var multipliers:Object = {
+				'S': 1,
+				'M': 60,
+				'H': 3600
+			};
+			var duration:Number = 0;
+			for (var i:uint=1; i<result.length; i++) {
+				if(result[i]){
+					var ele:String = result[i];
+					var multiplier:String = ele.substr(ele.length-1);
+					log.debug(multiplier, multipliers[multiplier].toString(), ele.substr(0,ele.length-1));
+					duration += (multipliers[multiplier] * Number(ele.substr(0,ele.length-1)));
+				}
 			}
-			return 50;
+			log.debug("ISO8601ToSeconds :: video duration converted to :: " + duration.toString());
+			return duration;
 		}
 		
 		public function get player_url():String{
 			return PLAYER_URL;
 		}
 		
-		/* 
-		https://www.googleapis.com/youtube/v3/videos/?id=Pq6emY4D4Xs&part=status&key=AIzaSyB_2uykRwVkf0rciJmJc04h0njKEPo3mtc
-		*/
 		public function get data_api():String{
 			if(_vid)
-				return API_PREFIX + '?id=' + _vid + ADDITIONAL_API_PARAMS;
+				return API_PREFIX + '?id=' + _vid + ADDITIONAL_API_PARAMS; //https://www.googleapis.com/youtube/v3/videos/?id=Pq6emY4D4Xs&part=status&key=AIzaSyB_2uykRwVkf0rciJmJc04h0njKEPo3mtc
 			return null;
 		}
 		
